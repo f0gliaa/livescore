@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dettaglio Partita</title>
+</head>
+<body>
+    <h1 id="titolo">Dettaglio Partita</h1>
+    <div id="info"></div>
+    <div id="eventi"></div>
+
+    <script>
+        // prendi id partita dall'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const matchId = parseInt(urlParams.get("id"));
+
+        const infoDiv = document.getElementById("info");
+        const eventiDiv = document.getElementById("eventi");
+
+        async function loadMatch() {
+            const res = await fetch("/matches");
+            const data = await res.json();
+            const p = data.live.find(m => m.id === matchId);
+            if(!p) {
+                infoDiv.innerHTML = "Partita non trovata o terminata";
+                return;
+            }
+            document.getElementById("titolo").innerText = p.squadre;
+            infoDiv.innerHTML = `
+                Sport: ${p.sport}<br>
+                Punti: ${p.punti} <br>
+                Ammonizioni: ${p.ammonizioni} <br>
+                Interruzioni: ${p.interruzioni}
+            `;
+        }
+
+        loadMatch();
+
+        // WebSocket per aggiornamenti live
+        const socket = new WebSocket("ws://localhost:2000/livescore");
+        socket.onmessage = function(event) {
+            const p = JSON.parse(event.data);
+            if(p.id === matchId) {
+                infoDiv.innerHTML = `
+                    Sport: ${p.sport}<br>
+                    Punti: ${p.punti} <br>
+                    Ammonizioni: ${p.ammonizioni} <br>
+                    Interruzioni: ${p.interruzioni}
+                `;
+                // puoi aggiungere logica eventi dettagliati qui
+            }
+        };
+    </script>
+</body>
+</html>
