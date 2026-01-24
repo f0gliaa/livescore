@@ -1,0 +1,29 @@
+services:
+  applicazione:
+    build: .
+    container_name: app_tornado
+    depends_on:
+      - mongo
+    ports:
+      - "8888:8888"
+    environment:
+      MONGO_HOST: mongo
+    networks:
+      - apinet
+
+  mongo:
+    image: mongo:latest
+    container_name: container_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - apinet
+
+volumes:
+  mongo_data:
+
+networks:
+  apinet:
+    driver: bridge
